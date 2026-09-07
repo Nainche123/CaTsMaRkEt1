@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CATSMARKET 관리자</title>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css?v=20260907final" />
+  <style id="admin-blue-force">
+    body { background: linear-gradient(165deg,#eaf3ff,#f3f8ff) fixed !important; color:#0f172a !important; }
+    .row-card, .stat, .glass { background:#fff !important; color:#0f172a !important; }
+  </style>
+  <style>
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; position: relative; z-index: 1; }
+    .admin-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 20px 0; }
+    .admin-tabs button { }
+    .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat { padding: 16px; text-align: center; }
+    .stat .num { font-size: 1.6rem; font-weight: 800; color: #c4b5ff; }
+    .stat .lbl { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .row-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+    }
+    .row-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .inline-inputs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .inline-inputs .input { flex: 1; min-width: 140px; }
+  </style>
+</head>
+<body>
+  <div class="bg-orbs" aria-hidden="true"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo"><span class="logo-icon">🐱</span><span class="logo-text">CATS<span>MARKET</span> Admin</span></a>
+      <a href="/" class="btn btn-sm btn-ghost">← 사이트로</a>
+    </div>
+  </header>
+  <div class="admin-wrap">
+    <h1 style="font-size:1.5rem;margin-bottom:8px">관리자 패널</h1>
+    <div class="stats" id="stats"></div>
+    <div class="admin-tabs">
+      <button class="chip active" data-tab="topups">충전 요청</button>
+      <button class="chip" data-tab="orders">주문 관리</button>
+      <button class="chip" data-tab="support">문의</button>
+      <button class="chip" data-tab="notices">공지</button>
+      <button class="chip" data-tab="coupons">쿠폰</button>
+      <button class="chip" data-tab="reviews">후기</button>
+    </div>
+    <div id="panel-topups" class="panel active"></div>
+    <div id="panel-orders" class="panel"></div>
+    <div id="panel-support" class="panel"></div>
+    <div id="panel-reviews" class="panel"><div id="adminReviews"></div></div>
+    <div id="panel-coupons" class="panel">
+      <div class="glass" style="padding:20px;margin-bottom:16px">
+        <h3 style="margin-bottom:12px">쿠폰 생성</h3>
+        <div class="inline-inputs">
+          <input id="cpCode" class="input" placeholder="코드 (예: WELCOME10)" />
+          <select id="cpType" class="input" style="max-width:140px"><option value="percent">% 할인</option><option value="fixed">원 할인</option></select>
+          <input id="cpValue" class="input" type="number" placeholder="할인값" />
+          <input id="cpMin" class="input" type="number" placeholder="최소금액(선택)" />
+          <input id="cpMax" class="input" type="number" placeholder="최대사용횟수(선택)" />
+          <button class="btn btn-primary" id="btnCoupon">생성</button>
+        </div>
+      </div>
+      <div id="couponList"></div>
+    </div>
+    <div id="panel-notices" class="panel">
+      <div class="glass" style="padding:20px;margin-bottom:16px">
+        <h3 style="margin-bottom:12px">공지 작성</h3>
+        <input id="noticeTitle" class="input" placeholder="제목" />
+        <textarea id="noticeBody" class="input textarea" rows="4" placeholder="내용" style="margin-top:10px"></textarea>
+        <button class="btn btn-primary" id="btnNotice" style="margin-top:10px">등록</button>
+      </div>
+      <div id="noticeList"></div>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script>
+    const $ = (s, el=document) => el.querySelector(s);
+    const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+    const fmt = n => Number(n||0).toLocaleString("ko-KR");
+    function toast(msg, type="") {
+      const t = $("#toast"); t.textContent = msg; t.className = "toast show " + type;
+      clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 3000);
+    }
+    async function api(path, opts={}) {
+      const res = await fetch(path, { credentials:"same-origin", headers:{"Content-Type":"application/json"}, ...opts, body: opts.body!=null?JSON.stringify(opts.body):undefined });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok) throw new Error(data.error || "실패");
+      return data;
+    }
+    function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+    $$(".admin-tabs .chip").forEach(b => b.addEventListener("click", () => {
+      $$(".admin-tabs .chip").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      $$(".panel").forEach(p => p.classList.remove("active"));
+      $(`#panel-${b.dataset.tab}`).classList.add("active");
+      if (b.dataset.tab==="topups") loadTopups();
+      if (b.dataset.tab==="orders") loadOrders();
+      if (b.dataset.tab==="support") loadSupport();
+      if (b.dataset.tab==="notices") loadNotices();
+      if (b.dataset.tab==="coupons") loadCoupons();
+      if (b.dataset.tab==="reviews") loadAdminReviews();
+    }));
+
+    async function loadStats() {
+      const s = await api("/api/admin/stats");
+      $("#stats").innerHTML = [
+        ["유저", s.users], ["주문", s.orders], ["대기주문", s.pendingOrders],
+        ["매출", fmt(s.revenue)+"원"], ["충전대기", s.topupPending], ["문의", s.openTickets]
+      ].map(([l,n]) => `<div class="stat glass"><div class="num">${n}</div><div class="lbl">${l}</div></div>`).join("");
+    }
+
+    async function loadTopups() {
+      const items = await api("/api/admin/topups");
+      const el = $("#panel-topups");
+      if (!items.length) { el.innerHTML = `<div class="empty">충전 요청 없음</div>`; return; }
+      el.innerHTML = items.map(t => `
+        <div class="row-card">
+          <div><strong>${esc(t.discord_name)}</strong> · ${fmt(t.amount)}원${t.bonus?` <span style="color:#dc2626;font-weight:800">+보너스 ${fmt(t.bonus)}원</span>`:""} · ${esc(t.depositor)}</div>
+          <div class="muted" style="font-size:0.85rem">${esc(t.request_no)} · ${esc(t.status)} · ${new Date(t.created_at).toLocaleString("ko-KR")}</div>
+          ${t.status==="pending" ? `<div class="row-actions">
+            <button class="btn btn-sm btn-primary" data-confirm="${t.id}">입금 확인</button>
+            <button class="btn btn-sm btn-danger" data-reject="${t.id}">거절</button>
+          </div>` : ""}
+        </div>`).join("");
+      $$("[data-confirm]", el).forEach(b => b.onclick = async () => {
+        try { await api(`/api/admin/topups/${b.dataset.confirm}`, {method:"PATCH", body:{status:"confirmed"}}); toast("포인트 지급 완료","success"); loadTopups(); loadStats(); } catch(e){ toast(e.message,"error"); }
+      });
+      $$("[data-reject]", el).forEach(b => b.onclick = async () => {
+        try { await api(`/api/admin/topups/${b.dataset.reject}`, {method:"PATCH", body:{status:"rejected"}}); toast("거절됨"); loadTopups(); loadStats(); } catch(e){ toast(e.message,"error"); }
+      });
+    }
+
+    async function loadOrders() {
+      const items = await api("/api/admin/orders");
+      const el = $("#panel-orders");
+      if (!items.length) { el.innerHTML = `<div class="empty">주문 없음</div>`; return; }
+      el.innerHTML = items.map(o => `
+        <div class="row-card">
+          <div><strong>${esc(o.product_name)}</strong> · ${fmt(o.amount)}원</div>
+          <div class="muted" style="font-size:0.85rem">${esc(o.discord_name)} · ${esc(o.order_no)} · <b>${esc(o.status)}</b></div>
+          ${o.note ? `<div style="font-size:0.85rem;margin-top:6px;color:#b45309"><b>요청사항:</b> ${esc(o.note)}</div>` : ""}
+          ${o.save_code ? `<div style="font-size:0.85rem;margin-top:6px">고객 세이브: <code>${esc(o.save_code)}</code> / 인증: <code>${esc(o.verification_code)}</code></div>` : ""}
+          ${o.delivered_save_code ? `<div style="font-size:0.85rem;color:var(--accent3)">지급 완료: ${esc(o.delivered_save_code)} / ${esc(o.delivered_verification_code)}</div>` : ""}
+          <div class="row-actions">
+            ${["credentials_submitted","processing"].includes(o.status) ? `
+              <div class="inline-inputs" style="width:100%">
+                <input class="input" data-save="${esc(o.order_no)}" placeholder="새 세이브코드" />
+                <input class="input" data-ver="${esc(o.order_no)}" placeholder="새 인증번호" />
+                <button class="btn btn-sm btn-primary" data-deliver="${esc(o.order_no)}">지급 완료</button>
+              </div>
+              <button class="btn btn-sm btn-accent" data-status="${esc(o.order_no)}" data-val="processing">처리중으로</button>
+            ` : ""}
+            ${o.status!=="cancelled"&&o.status!=="completed" ? `<button class="btn btn-sm btn-danger" data-status="${esc(o.order_no)}" data-val="cancelled">취소(환불)</button>` : ""}
+          </div>
+        </div>`).join("");
+      $$("[data-deliver]", el).forEach(b => b.onclick = async () => {
+        const no = b.dataset.deliver;
+        const save = $(`[data-save="${CSS.escape(no)}"]`).value;
+        const ver = $(`[data-ver="${CSS.escape(no)}"]`).value;
+        try {
+          await api(`/api/admin/orders/${encodeURIComponent(no)}/deliver`, {method:"POST", body:{saveCode:save, verificationCode:ver}});
+          toast("지급 완료 · DM 발송","success"); loadOrders(); loadStats();
+        } catch(e){ toast(e.message,"error"); }
+      });
+      $$("[data-status]", el).forEach(b => b.onclick = async () => {
+        try {
+          await api(`/api/admin/orders/${encodeURIComponent(b.dataset.status)}`, {method:"PATCH", body:{status:b.dataset.val}});
+          toast("상태 변경됨","success"); loadOrders(); loadStats();
+        } catch(e){ toast(e.message,"error"); }
+      });
+    }
+
+    async function loadSupport() {
+      const tickets = await api("/api/admin/support");
+      const el = $("#panel-support");
+      if (!tickets.length) { el.innerHTML = `<div class="empty">문의 없음</div>`; return; }
+      el.innerHTML = tickets.map(t => `
+        <div class="row-card">
+          <div><strong>${esc(t.discord_name)}</strong> · ${esc(t.subject)} · <span class="muted">${esc(t.status)}</span></div>
+          <div class="muted" style="font-size:0.8rem">${esc(t.ticket_no)}</div>
+          <div style="margin:10px 0;max-height:160px;overflow:auto">
+            ${(t.messages||[]).map(m => `<div class="msg ${m.sender_role==="admin"?"admin":""}" style="margin-bottom:6px"><div class="meta">${esc(m.sender_name)}</div>${esc(m.body)}</div>`).join("")}
+          </div>
+          <div class="inline-inputs">
+            <input class="input" data-reply="${t.id}" placeholder="답변 입력" />
+            <button class="btn btn-sm btn-primary" data-send="${t.id}">답변</button>
+            ${t.status!=="closed" ? `<button class="btn btn-sm btn-ghost" data-close="${t.id}">종료</button>` : ""}
+          </div>
+        </div>`).join("");
+      $$("[data-send]", el).forEach(b => b.onclick = async () => {
+        const body = $(`[data-reply="${b.dataset.send}"]`).value;
+        try { await api(`/api/admin/support/${b.dataset.send}`, {method:"POST", body:{body}}); toast("답변 전송","success"); loadSupport(); } catch(e){ toast(e.message,"error"); }
+      });
+      $$("[data-close]", el).forEach(b => b.onclick = async () => {
+        try { await api(`/api/admin/support/${b.dataset.close}`, {method:"PATCH", body:{status:"closed"}}); toast("종료됨"); loadSupport(); } catch(e){ toast(e.message,"error"); }
+      });
+    }
+
+    async function loadAdminReviews() {
+      const items = await api("/api/reviews");
+      const el = $("#adminReviews");
+      el.innerHTML = items.map(r => `
+        <div class="row-card">
+          <div>${"★".repeat(r.rating)} · <strong>${esc(r.discord_name)}</strong></div>
+          <div style="margin:6px 0">${esc(r.body)}</div>
+          <button class="btn btn-sm btn-danger" data-rdel="${r.id}">삭제</button>
+        </div>`).join("") || `<div class="empty">후기 없음</div>`;
+      $$("[data-rdel]", el).forEach(b => b.onclick = async () => {
+        if(!confirm("삭제할까요?")) return;
+        try { await api(`/api/reviews/${b.dataset.rdel}`, {method:"DELETE"}); loadAdminReviews(); }
+        catch(e){ toast(e.message,"error"); }
+      });
+    }
+    async function loadCoupons() {
+      const items = await api("/api/admin/coupons");
+      const el = $("#couponList");
+      el.innerHTML = items.map(c => `
+        <div class="row-card">
+          <strong>${esc(c.code)}</strong> · ${c.type==="fixed"?fmt(c.value)+"원":c.value+"%"} 할인
+          <span class="muted">사용 ${c.used||0}${c.max_uses!=null?"/"+c.max_uses:""} · ${c.active===false?"비활성":"활성"}</span>
+          <div class="row-actions">
+            <button class="btn btn-sm btn-ghost" data-cp="${c.id}" data-on="${c.active===false}">${c.active===false?"활성화":"비활성화"}</button>
+          </div>
+        </div>`).join("") || `<div class="empty">쿠폰 없음</div>`;
+      $$("[data-cp]", el).forEach(b => b.onclick = async () => {
+        try {
+          await api(`/api/admin/coupons/${b.dataset.cp}`, {method:"PATCH", body:{active: b.dataset.on==="true"}});
+          loadCoupons();
+        } catch(e){ toast(e.message,"error"); }
+      });
+    }
+    $("#btnCoupon").onclick = async () => {
+      try {
+        await api("/api/admin/coupons", {method:"POST", body:{
+          code: $("#cpCode").value,
+          type: $("#cpType").value,
+          value: Number($("#cpValue").value),
+          min_amount: Number($("#cpMin").value||0),
+          max_uses: $("#cpMax").value===""?null:Number($("#cpMax").value)
+        }});
+        toast("쿠폰 생성","success"); loadCoupons();
+      } catch(e){ toast(e.message,"error"); }
+    };
+    async function loadNotices() {
+      const list = await api("/api/notices");
+      $("#noticeList").innerHTML = list.map(n => `
+        <div class="row-card">
+          <strong>${esc(n.title)}</strong>
+          <div class="muted" style="font-size:0.85rem;margin:6px 0;white-space:pre-wrap">${esc(n.body)}</div>
+          <button class="btn btn-sm btn-danger" data-del="${n.id}">삭제</button>
+        </div>`).join("") || `<div class="empty">공지 없음</div>`;
+      $$("[data-del]").forEach(b => b.onclick = async () => {
+        try { await api(`/api/admin/notices/${b.dataset.del}`, {method:"DELETE"}); loadNotices(); } catch(e){ toast(e.message,"error"); }
+      });
+    }
+    $("#btnNotice").onclick = async () => {
+      try {
+        await api("/api/admin/notices", {method:"POST", body:{title:$("#noticeTitle").value, body:$("#noticeBody").value}});
+        $("#noticeTitle").value=""; $("#noticeBody").value="";
+        toast("공지 등록","success"); loadNotices();
+      } catch(e){ toast(e.message,"error"); }
+    };
+
+    (async () => {
+      try {
+        await loadStats();
+        await loadTopups();
+      } catch(e) {
+        document.querySelector(".admin-wrap").innerHTML = `<div class="empty">${esc(e.message)}<br><a href="/auth/discord">로그인</a></div>`;
+      }
+    })();
+  </script>
+</body>
+</html>

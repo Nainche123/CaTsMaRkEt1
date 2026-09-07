@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CATSMARKET · 냥코 아이템 샵</title>
+  <meta name="theme-color" content="#3b82f6" />
+  <meta name="description" content="냥코 대전쟁 아이템 · 패키지 · 스토리 진행 전문 샵" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="/styles.css?v=20260907vip2" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <span class="logo-icon">🐱</span>
+        <span class="logo-text">CATS<span>MARKET</span></span>
+      </a>
+      <nav class="nav">
+        <button class="nav-btn active" data-section="shop">상점</button>
+        <button class="nav-btn" data-section="orders">내 주문</button>
+        <button class="nav-btn" data-section="reviews">후기</button>
+        <button class="nav-btn" data-section="support">문의</button>
+        <button class="nav-btn" data-section="notices">공지</button>
+        <button class="nav-btn" data-section="vip">VIP</button>
+        <button class="nav-btn" data-section="faq">FAQ</button>
+      </nav>
+      <div class="header-right">
+        <div id="walletBar" class="wallet-bar hidden">
+          <span class="wallet-label">잔액</span>
+          <strong id="balanceText">0원</strong>
+          <button class="btn btn-sm btn-accent" id="btnTopup">충전</button>
+        </div>
+        <div id="authArea">
+          <button class="btn btn-discord" id="btnLogin">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.548-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+            Discord 로그인
+          </button>
+        </div>
+        <div id="userArea" class="user-area hidden">
+          <img id="userAvatar" class="avatar" alt="" />
+          <span id="userName" class="user-name"></span>
+          <a id="adminLink" class="btn btn-sm btn-ghost hidden" href="/admin">관리자</a>
+          <button class="btn btn-sm btn-ghost" id="btnLogout">로그아웃</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div id="noticeStrip" class="notice-strip hidden"></div>
+
+    <section class="hero" id="hero">
+      <div class="hero-content">
+        <p class="hero-badge">🐱 냥코 대전쟁 전문 샵</p>
+        <h1>빠르고 안전한<br /><span class="gradient-text">아이템 · 패키지</span></h1>
+        <p class="hero-desc">사이트 회원가입 후 포인트로 구매하세요. 세이브코드는 사이트 주문내역에서 안전하게 확인할 수 있습니다.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" data-section="shop">상점 둘러보기</button>
+          <button class="btn btn-outline btn-lg" id="btnTopupHero">포인트 충전</button>
+        </div>
+      </div>
+      <div class="activity-card">
+        <h3>실시간 구매 현황</h3>
+        <ul id="activityList" class="activity-list"><li class="muted">불러오는 중…</li></ul>
+      </div>
+    </section>
+
+    <div id="socialProof" class="notice-strip" style="justify-content:center;gap:18px;flex-wrap:wrap">
+      <span>🔥 오늘 <strong id="spToday">0</strong>건 구매</span>
+      <span>⭐ 평점 <strong id="spRating">5.0</strong> (<span id="spReviews">0</span>)</span>
+      <span>📦 누적 주문 <strong id="spOrders">0</strong></span>
+      <span id="spEta" class="muted"></span>
+      <a id="spCommunity" class="btn btn-sm btn-accent hidden" href="#" target="_blank" rel="noopener">Discord 커뮤니티</a>
+    </div>
+    <p id="hoursNote" class="muted" style="text-align:center;margin:-8px 0 18px;font-size:.88rem"></p>
+    <div class="trust-row">
+      <div class="trust-item"><div class="icon">⚡</div><div class="t">빠른 처리</div><div class="d">세이브코드 신속 지급</div></div>
+      <div class="trust-item"><div class="icon">🔒</div><div class="t">안전한 거래</div><div class="d">주문 추적 · 안전한 결제</div></div>
+      <div class="trust-item"><div class="icon">💬</div><div class="t">1:1 문의</div><div class="d">사이트 고객지원</div></div>
+    </div>
+
+    <div class="steps">
+      <div class="step"><div class="num">1</div><h4>사이트 회원가입</h4><p>아이디와 비밀번호로 간편하게 이용</p></div>
+      <div class="step"><div class="num">2</div><h4>포인트 충전</h4><p>토스뱅크 입금 후 관리자 확인</p></div>
+      <div class="step"><div class="num">3</div><h4>상품 구매</h4><p>세이브코드 · 인증번호 제출</p></div>
+      <div class="step"><div class="num">4</div><h4>코드 수령</h4><p>사이트 주문내역에서 확인</p></div>
+    </div>
+
+    <section class="section" id="section-popular">
+      <div class="section-head"><h2>🔥 인기 상품</h2></div>
+      <div id="popularGrid" class="product-grid"></div>
+    </section>
+    <section class="section" id="section-shop">
+      <div class="section-head">
+        <h2>상품 목록</h2>
+        <div class="filters">
+          <input class="search-input" id="productSearch" placeholder="상품 검색…" />
+          <select id="productSort" class="search-input" style="width:auto;border-radius:999px;padding:8px 12px">
+            <option value="default">추천순</option>
+            <option value="price_asc">낮은 가격순</option>
+            <option value="price_desc">높은 가격순</option>
+            <option value="name">이름순</option>
+          </select>
+          <button class="chip" id="btnFavOnly" type="button">♡ 찜만</button>
+          <button class="chip active" data-filter="all">전체</button>
+          <button class="chip" data-filter="package">패키지</button>
+          <button class="chip" data-filter="story">스토리</button>
+          <button class="chip" data-filter="character">캐릭터</button>
+          <button class="chip" data-filter="resource">재화</button>
+          <button class="chip" data-filter="ticket">티켓</button>
+        </div>
+      </div>
+      <div id="productGrid" class="product-grid"></div>
+    </section>
+
+    <section class="section hidden" id="section-orders">
+      <div class="section-head">
+        <h2>내 주문</h2>
+        <button class="btn btn-sm btn-ghost" id="btnPointLogs">포인트 내역</button>
+      </div>
+      <div id="pointLogsBox" class="hidden" style="margin-bottom:14px"></div>
+      <div class="order-tabs" id="orderTabs">
+        <button class="chip active" data-ostatus="all">전체</button>
+        <button class="chip" data-ostatus="active">진행중</button>
+        <button class="chip" data-ostatus="completed">완료</button>
+        <button class="chip" data-ostatus="cancelled">취소</button>
+      </div>
+      <div id="ordersList" class="orders-list"></div>
+    </section>
+
+    <section class="section hidden" id="section-reviews">
+      <div class="section-head">
+        <h2>이용 후기</h2>
+        <button class="btn btn-sm btn-accent" id="btnWriteReview">후기 작성</button>
+      </div>
+      <div id="reviewsList" class="reviews-list"></div>
+    </section>
+
+    <section class="section hidden" id="section-support">
+      <div class="section-head"><h2>고객센터</h2></div>
+      <div class="support-layout">
+        <div class="glass support-form-card">
+          <h3>문의하기</h3>
+          <input id="supportSubject" class="input" placeholder="제목 (선택)" maxlength="100" />
+          <textarea id="supportBody" class="input textarea" placeholder="문의 내용을 입력해주세요" rows="4" maxlength="2000"></textarea>
+          <button class="btn btn-primary" id="btnSendSupport">보내기</button>
+        </div>
+        <div class="glass support-thread-card">
+          <div class="support-thread-head">
+            <h3>대화 내역</h3>
+            <button class="btn btn-sm btn-ghost hidden" id="btnCloseTicket">문의 종료</button>
+          </div>
+          <div id="supportMessages" class="support-messages"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="section-notices">
+      <div class="section-head"><h2>공지사항</h2></div>
+      <div id="noticesList" class="notices-list"></div>
+    </section>
+
+        <section class="section hidden" id="section-vip">
+      <div class="section-head"><h2>👑 VIP 멤버십</h2></div>
+      <div id="vipPanel" class="vip-progress">
+        <p class="muted">로그인 후 VIP 진행도를 확인할 수 있습니다.</p>
+      </div>
+      <p class="muted" style="text-align:center;margin:12px 0">※ 누적 <strong>구매</strong> 금액 기준 · 가장 높은 등급만 적용 · <span id="vipNeedText">VIP1 1만 / VIP2 3만 / VIP3 7만</span></p>
+      <div id="vipTiers" class="product-grid" style="margin-bottom:16px"></div>
+      <div id="vipBuyBox" class="vip-progress">
+        <h3 style="margin-bottom:8px">💳 VIP 등급 구매</h3>
+        <p class="muted" style="font-size:.85rem;margin-bottom:10px">더 빨리 혜택을 받고 싶다면 포인트로 VIP를 구매할 수 있습니다. (중복 시 높은 등급만 적용)</p>
+        <div id="vipBuyButtons" class="filters"></div>
+      </div>
+      <div id="referralBox" class="vip-progress" style="margin-top:14px">
+        <h3 style="margin-bottom:8px">🎁 추천인 코드</h3>
+        <p class="muted" style="font-size:.85rem;margin-bottom:8px">친구 첫 충전 시 추천인에게 +500P · 첫 충전 전에만 등록 가능</p>
+        <div id="referralInfo" class="muted">로그인 후 확인</div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="section-faq">
+      <div class="section-head"><h2>자주 묻는 질문</h2></div>
+      <div class="faq-list">
+        <div class="faq-item open">
+          <button class="faq-q">충전은 어떻게 하나요? <span>▾</span></button>
+          <div class="faq-a">충전하기 버튼에서 입금자명과 금액을 입력하세요. 토스뱅크 계좌로 입금 후 관리자가 확인하면 포인트가 바로 지급됩니다.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">세이브코드는 언제 받나요? <span>▾</span></button>
+          <div class="faq-a">구매 후 게임 세이브코드·인증번호를 제출하면, 관리자가 처리 후 Discord DM과 사이트 주문내역에 새 코드를 보내드립니다.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">환불이 가능한가요? <span>▾</span></button>
+          <div class="faq-a">처리 전(세이브코드 지급 전) 주문은 관리자가 취소 시 포인트가 환불됩니다. 처리 완료 후 환불은 상황에 따라 고객센터로 문의해 주세요.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">로그인이 안 돼요 <span>▾</span></button>
+          <div class="faq-a">닉네임과 비밀번호를 다시 확인해주세요. 계정이 없다면 회원가입부터 진행해주세요.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="mobile-nav">
+    <button data-section="shop" class="active"><span class="ico">🛒</span>상점</button>
+    <button data-section="orders"><span class="ico">📦</span>주문</button>
+    <button data-section="reviews"><span class="ico">⭐</span>후기</button>
+    <button data-section="support"><span class="ico">💬</span>문의</button>
+    <button id="btnTopupMobile"><span class="ico">💳</span>충전</button>
+  </nav>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div><strong>이용 안내</strong>사이트 회원가입 후 포인트로 구매합니다.</div>
+      <div><strong>처리 시간</strong>평균 10분~1시간 · 수업/심야은 지연될 수 있습니다.</div>
+      <div><strong>고객지원</strong>사이트 문의</div>
+    </div>
+    <p>© CATSMARKET · 냥코 아이템 샵</p>
+    <p class="site-version">Final v1.0 · Web Vending</p>
+  </footer>
+  <div id="toast" class="toast"></div>
+
+  <div id="modalTopup" class="modal hidden">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card glass">
+      <button class="modal-close" data-close>&times;</button>
+      <h2>포인트 충전</h2>
+      <p class="muted">아래 계좌로 입금 후 정보를 입력하면 확인 후 포인트가 지급됩니다.</p>
+      <div id="bankInfo" class="bank-info"></div>
+      <label class="label">입금자명</label>
+      <input id="topupDepositor" class="input" placeholder="실제 입금자명" maxlength="50" />
+      <label class="label">충전 금액 (원)</label>
+      <input id="topupAmount" class="input" type="number" min="1000" step="1000" placeholder="1000 이상" />
+      <div id="bonusPreview" class="bonus-banner hidden"></div>
+      <div class="quick-amounts">
+        <button class="chip" data-amount="5000">5,000</button>
+        <button class="chip" data-amount="10000">10,000</button>
+        <button class="chip" data-amount="30000">30,000</button>
+        <button class="chip" data-amount="50000">50,000</button>
+      </div>
+      <button class="btn btn-primary btn-block" id="btnSubmitTopup">충전 요청</button>
+    </div>
+  </div>
+
+  <div id="modalProduct" class="modal hidden">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card glass modal-wide">
+      <button class="modal-close" data-close>&times;</button>
+      <div id="productDetail"></div>
+    </div>
+  </div>
+
+  <div id="modalCreds" class="modal hidden">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card glass">
+      <button class="modal-close" data-close>&times;</button>
+      <h2>세이브코드 제출</h2>
+      <p class="muted">게임에서 받은 세이브코드와 인증번호를 입력해주세요.</p>
+      <input type="hidden" id="credOrderNo" />
+      <label class="label">세이브코드</label>
+      <input id="credSave" class="input" placeholder="세이브코드" />
+      <label class="label">인증번호</label>
+      <input id="credVer" class="input" placeholder="인증번호" />
+      <button class="btn btn-primary btn-block" id="btnSubmitCreds">제출하기</button>
+    </div>
+  </div>
+
+  <div id="modalReview" class="modal hidden">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card glass">
+      <button class="modal-close" data-close>&times;</button>
+      <h2>후기 작성</h2>
+      <label class="label">별점</label>
+      <div class="stars" id="reviewStars">
+        <button data-r="1">★</button><button data-r="2">★</button><button data-r="3">★</button><button data-r="4">★</button><button data-r="5">★</button>
+      </div>
+      <label class="label">내용</label>
+      <textarea id="reviewBody" class="input textarea" rows="3" maxlength="500" placeholder="이용 후기를 남겨주세요"></textarea>
+      <button class="btn btn-primary btn-block" id="btnSubmitReview">등록</button>
+    </div>
+  </div>
+
+  <div id="deliverAlert" class="deliver-alert hidden">
+    <div class="deliver-alert-inner">
+      <span class="deliver-icon">🎉</span>
+      <div>
+        <strong>새로운 세이브코드가 도착했습니다!</strong>
+        <p>주문 내역에서 확인하세요.</p>
+      </div>
+      <button class="btn btn-sm btn-primary" id="btnGoOrders">확인하기</button>
+      <button class="btn btn-sm btn-ghost" id="btnDismissAlert">닫기</button>
+    </div>
+  </div>
+
+
+  <div id="modalAuth" class="modal hidden">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card glass">
+      <button class="modal-close" data-close>&times;</button>
+      <h2 id="authTitle">로그인</h2>
+      <p class="muted" id="authDesc">CATSMARKET 계정으로 로그인하세요.</p>
+      <label class="label">닉네임</label>
+      <input id="authUsername" class="input" maxlength="32" placeholder="닉네임" autocomplete="username" />
+      <label class="label">비밀번호</label>
+      <input id="authPassword" class="input" type="password" maxlength="100" placeholder="6자 이상" autocomplete="current-password" />
+      <button class="btn btn-primary btn-block" id="btnAuthSubmit">로그인</button>
+      <button class="btn btn-ghost btn-block" id="btnAuthToggle">회원가입으로 전환</button>
+    </div>
+  </div>
+  <script src="/app.js?v=local1"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "users": [
+    {
+      "id": "3d0f2f07-e3ea-4286-8bd0-bcc58664fb13",
+      "discord_id": "858531947076911114",
+      "username": "MOT",
+      "avatar": "d3badaba18cf7d850061d6af4eef014d",
+      "created_at": "2026-09-06T11:23:18.940Z",
+      "last_login_at": "2026-09-07T12:34:10.369Z",
+      "balance": 0
+    }
+  ],
+  "orders": [],
+  "reviews": [
+    {
+      "id": "6449173d-b9b7-427e-b059-0519f131727b",
+      "user_id": "3d0f2f07-e3ea-4286-8bd0-bcc58664fb13",
+      "discord_name": "MOT",
+      "rating": 5,
+      "body": "test",
+      "created_at": "2026-09-06T11:34:54.347Z"
+    }
+  ],
+  "notices": [],
+  "tickets": [],
+  "messages": [],
+  "coupons": [],
+  "topups": [],
+  "activities": [],
+  "point_logs": [],
+  "login_logs": [
+    {
+      "id": "1d40cbf0-888d-4d92-854f-fc98883a7a46",
+      "discord_id": "858531947076911114",
+      "username": "MOT",
+      "ip": "::1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 OPR/135.0.0.0",
+      "created_at": "2026-09-06T11:33:06.694Z"
+    }
+  ]
+}
